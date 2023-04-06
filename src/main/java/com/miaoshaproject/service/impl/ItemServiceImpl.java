@@ -14,11 +14,13 @@ import com.miaoshaproject.validator.ValidationResult;
 import com.miaoshaproject.validator.ValidatorImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +37,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private StockLogMapper stockLogMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
 
 
@@ -128,6 +133,17 @@ public class ItemServiceImpl implements ItemService {
         stockLog.setStockLogId(UUID.randomUUID().toString().replace("-",""));
         stockLogMapper.insertSelective(stockLog);
         return stockLog.getStockLogId();
+    }
+
+    @Override
+    public ItemModel getItemByIdInCache(Integer itemId) {
+        ItemModel itemModel = (ItemModel) redisTemplate.opsForValue().get("item_validate_"+itemId);
+        if(itemModel == null) {
+            itemModel = this.getItemById(itemId);
+            redisTemplate.opsForValue().set("item_validate_"+itemId,itemModel);
+            redisTemplate.expire("item_validate_" + itemId, 10, TimeUnit.MINUTES);
+        }
+        return itemModel;
     }
 
     private ItemModel convertModelFromDataObject(ItemDO itemDO,ItemStockDO itemStockDO){

@@ -20,4 +20,6 @@ public interface ItemService {
     void increaseSales(Integer itemId,Integer amount) throws BussinessException;
 
     String initStockLog(Integer itemId, Integer amount);
+
+    ItemModel getItemByIdInCache(Integer itemId);
 }

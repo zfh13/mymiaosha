@@ -12,4 +12,5 @@ public interface UserService {
      UserModel validateLogin(String telphone,String encrptPassword) throws BussinessException;
 
 
+    UserModel getUserByIdInCache(Integer userId);
 }
