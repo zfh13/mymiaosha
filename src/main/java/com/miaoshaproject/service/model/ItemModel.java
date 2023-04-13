@@ -1,14 +1,19 @@
 package com.miaoshaproject.service.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
-public class ItemModel {
+@AllArgsConstructor
+@NoArgsConstructor
+public class ItemModel implements Serializable {
 
 
     private Integer id;

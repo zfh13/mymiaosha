@@ -89,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
 
         StockLog stockLog = stockLogMapper.selectByPrimaryKey(stockLogId);
         if(stockLog == null) {
-            throw new BussinessException(EmBusinessError.UNKNOW_ERROR);
+            throw new BussinessException(EmBusinessError.UNKNOWN_ERROR);
         }
         stockLog.setStatus(2);
         stockLogMapper.updateByPrimaryKeySelective(stockLog);

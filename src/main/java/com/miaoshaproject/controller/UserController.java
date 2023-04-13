@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping("/user")
-@CrossOrigin
+@CrossOrigin(allowCredentials = "true",originPatterns = "*",allowedHeaders = "*")
 public class UserController extends BaseController{
 
     @Autowired
@@ -37,7 +37,8 @@ public class UserController extends BaseController{
     @Autowired
     private RedisTemplate redisTemplate;
 
-
+    @RequestMapping(value = "/login",method = {RequestMethod.POST},consumes={CONTENT_TYPE_FORMED})
+    @ResponseBody
     public CommonReturnType login(@RequestParam(name = "telephone") String telephone,@RequestParam(name = "password") String password) throws BussinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
         if(StringUtils.isBlank(telephone) || StringUtils.isBlank(password)) {
             return null;
@@ -66,7 +67,7 @@ public class UserController extends BaseController{
         UserModel userModel = userService.getUserById(id);
 
         if(userModel == null) {
-            throw new BussinessException(EmBusinessError.UNKNOW_ERROR);
+            throw new BussinessException(EmBusinessError.UNKNOWN_ERROR);
         }
 
         UserVo userVo = convertToUserVo(userModel);
@@ -74,7 +75,7 @@ public class UserController extends BaseController{
 
     }
 
-    @RequestMapping(value = "/getotp", method = RequestMethod.POST  ,consumes = CONTENT_TYPE_FORMED )
+    @RequestMapping(value = "/getotp", method = {RequestMethod.POST}  ,consumes = {CONTENT_TYPE_FORMED} )
     @ResponseBody
     public CommonReturnType getOtp(@RequestParam(name="telephone") String telephone) {
         Random random = new Random();
@@ -83,16 +84,17 @@ public class UserController extends BaseController{
         String otp = String.valueOf(ran);
         httpServletRequest.getSession().setAttribute(telephone,otp);
 
-        System.out.println("telephone = " + telephone + "&optCode=" + otp);
+        System.out.println("telephone = " + telephone + "&optCode= " + otp);
         return CommonReturnType.create(null);
 
     }
 
-    @RequestMapping(value="/register",method = RequestMethod.POST ,consumes = CONTENT_TYPE_FORMED)
+    @RequestMapping(value="/register",method = {RequestMethod.POST} ,consumes = {CONTENT_TYPE_FORMED})
+    @ResponseBody
     public CommonReturnType register(@RequestParam(name = "telephone") String telephone,
                                      @RequestParam(name = "otpCode") String otpCode,
                                      @RequestParam(name = "name") String name,
-                                     @RequestParam(name = "gender") Integer gender,
+                                     @RequestParam(name = "gender") Byte gender,
                                      @RequestParam(name = "age") Integer age,
                                      @RequestParam(name="password")String password) throws BussinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
         String targetotp = (String)httpServletRequest.getSession().getAttribute(telephone);
@@ -100,11 +102,12 @@ public class UserController extends BaseController{
             throw new BussinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR, "短信验证码不符合");
         }
         UserModel userModel = new UserModel();
-        userModel.setPassword(enCodeByMD5(password));
+        userModel.setPassword(this.enCodeByMD5(password));
         userModel.setName(name);
         userModel.setRegisterMode("Byphone");
         userModel.setAge(age);
-        userModel.setGender(new Byte(String.valueOf(gender.intValue())));
+        userModel.setGender(gender);
+        userModel.setTelephone(telephone);
         userService.register(userModel);
         return CommonReturnType.create(null);
 

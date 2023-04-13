@@ -9,6 +9,8 @@ import com.miaoshaproject.dataobject.error.BussinessException;
 import com.miaoshaproject.dataobject.error.EmBusinessError;
 import com.miaoshaproject.service.UserService;
 import com.miaoshaproject.service.model.UserModel;
+import com.miaoshaproject.validator.ValidationResult;
+import com.miaoshaproject.validator.ValidatorImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,9 @@ public class UserServiceImpl implements UserService {
     private UserPasswordDOMapper userPasswordDOMapper;
 
     @Autowired
+    private ValidatorImpl validator;
+
+    @Autowired
     private RedisTemplate redisTemplate;
 
     @Override
@@ -47,15 +52,20 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void register(UserModel userModel) throws BussinessException {
-
-        UserDO userDo = convertFromData(userModel);
-        try{
-            userDOMapper.insertSelective(userDo);
-        } catch (DuplicateKeyException e) {
-            throw new BussinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,"手机号已被注册！");
+        if(userModel == null){
+            throw new BussinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR);
         }
-        userModel.setId(userDo.getId());
-
+        ValidationResult result =  validator.validate(userModel);
+        if(result.hasErrors()){
+            throw new BussinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,result.getErrMsg());
+        }
+        UserDO userDO = convertFromData(userModel);
+        try{
+            userDOMapper.insertSelective(userDO);
+        }catch(DuplicateKeyException ex){
+            throw new BussinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,"手机号已重复注册");
+        }
+        userModel.setId(userDO.getId());
         UserPasswordDO userPasswordDO = convertPasswordFromModel(userModel);
         userPasswordDOMapper.insertSelective(userPasswordDO);
 

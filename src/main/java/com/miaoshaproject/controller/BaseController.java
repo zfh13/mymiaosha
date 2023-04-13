@@ -28,8 +28,8 @@ public class BaseController {
             responseData.put("errCode",bussinessException.getErrorCode());
             responseData.put("errMsg",bussinessException.getErrMsg());
         } else {
-            responseData.put("errCode", EmBusinessError.UNKNOW_ERROR.getErrorCode());
-            responseData.put("errMsg",EmBusinessError.UNKNOW_ERROR.getErrMsg());
+            responseData.put("errCode", EmBusinessError.UNKNOWN_ERROR.getErrorCode());
+            responseData.put("errMsg",EmBusinessError.UNKNOWN_ERROR.getErrMsg());
         }
         return CommonReturnType.create(responseData,"fail");
 

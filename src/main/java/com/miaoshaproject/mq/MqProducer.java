@@ -64,7 +64,7 @@ public class MqProducer {
                 Integer amount = (Integer) ((Map)o).get("amount");
                 String stockLogId = (String) ((Map)o).get("stockLogId");
                 try {
-                    orderService.createOrder(userId, itemId, promoId, amount);
+                    orderService.createOrder(userId, itemId, promoId, amount,stockLogId);
                 } catch (BussinessException e) {
                     throw new RuntimeException(e);
                 }

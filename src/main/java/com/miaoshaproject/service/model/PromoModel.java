@@ -1,12 +1,17 @@
 package com.miaoshaproject.service.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
-public class PromoModel {
+@AllArgsConstructor
+@NoArgsConstructor
+public class PromoModel implements Serializable {
 
     private Integer id;
 

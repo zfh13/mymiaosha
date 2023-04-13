@@ -33,4 +33,8 @@ public class BussinessException extends Exception implements CommonError{
         this.commonError.setErrMsg(str);
         return this;
     }
+
+    public CommonError getCommonError() {
+        return commonError;
+    }
 }

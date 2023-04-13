@@ -1,11 +1,16 @@
 package com.miaoshaproject.service.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
-public class OrderModel {
+@AllArgsConstructor
+@NoArgsConstructor
+public class OrderModel implements Serializable {
 
     //要用string
     private String id;

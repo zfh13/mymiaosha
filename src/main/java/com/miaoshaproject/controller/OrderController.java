@@ -9,6 +9,7 @@ import com.miaoshaproject.service.ItemService;
 import com.miaoshaproject.service.OrderService;
 import com.miaoshaproject.service.PromoService;
 import com.miaoshaproject.service.model.UserModel;
+import com.miaoshaproject.util.CodeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -26,7 +27,7 @@ import java.util.concurrent.*;
 
 @Controller
 @RequestMapping("/order")
-@CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
+@CrossOrigin(allowCredentials = "true",originPatterns = "*",allowedHeaders = "*")
 public class OrderController extends BaseController{
 
     @Autowired
@@ -58,8 +59,6 @@ public class OrderController extends BaseController{
     }
 
 
-
-
     @RequestMapping(value = "/createorder", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
     public CommonReturnType createOrder(@RequestParam(name = "itemId") Integer itemId,
@@ -73,7 +72,7 @@ public class OrderController extends BaseController{
 
         String token = httpServletRequest.getParameterMap().get("token")[0];
         if(StringUtils.isEmpty(token)) {
-            return new BussinessException(EmBusinessError.USER_NOT_LOGIN, "用户还未登陆，不能下单"));
+            throw new BussinessException(EmBusinessError.USER_NOT_LOGIN, "用户还未登陆，不能下单");
         }
         UserModel userModel = (UserModel)redisTemplate.opsForValue().get(token);
         if (userModel == null) {
@@ -92,7 +91,8 @@ public class OrderController extends BaseController{
             public Object call() throws Exception {
                 String stocklogId = itemService.initStockLog(itemId,amount);
                 if(!mqProducer.transactionAsyncReduceStock(userModel.getId(),itemId,promoId,amount,stocklogId)) {
-                    throw new BussinessException(EmBusinessError.UNKNOW_ERROR,"一致性问题");
+                    throw new BussinessException(EmBusinessError.UNKNOWN_ERROR,"一致性问题");
+
                 }
                 return null;
             }
@@ -120,7 +120,7 @@ public class OrderController extends BaseController{
         UserModel userModel = (UserModel) redisTemplate.opsForValue().get(token);
         if(userModel == null)
             throw new BussinessException(EmBusinessError.USER_NOT_LOGIN, "用户还未登陆，不能生成验证码");
-        Map<String, Object> map =CodeUtil.generateCodeAndPic();
+        Map<String, Object> map = CodeUtil.generateCodeAndPic();
         redisTemplate.opsForValue().set("verify_code_"+userModel.getId(),map.get("code"));
         redisTemplate.expire("verify_code_"+userModel.getId(),10,TimeUnit.MINUTES);
         ImageIO.write((RenderedImage) map.get("codePic"), "jpeg", response.getOutputStream());
